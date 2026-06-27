@@ -1,0 +1,17 @@
+<h1>{{ quiz.title }}</h1>
+
+<form action="{% url 'lms_core:submit_quiz' quiz.id %}" method="post">
+    {% csrf_token %}
+    {% for question in quiz.questions.all %}
+        <fieldset>
+            <legend>{{ question.text }}</legend>
+            {% for answer in question.answers.all %}
+                <div>
+                    <input type="radio" name="question_{{ question.id }}" value="{{ answer.id }}" id="answer_{{ answer.id }}">
+                    <label for="answer_{{ answer.id }}">{{ answer.text }}</label>
+                </div>
+            {% endfor %}
+        </fieldset>
+    {% endfor %}
+    <button type="submit">Submit Quiz</button>
+</form>

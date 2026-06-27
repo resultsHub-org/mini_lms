@@ -1,0 +1,22 @@
+<h1>{{ course.title }}</h1>
+<p>{{ course.description }}</p>
+
+<a href="{% url 'lms_core:enroll_in_course' course.id %}">Enroll Now</a>
+
+<h2>Lessons</h2>
+<ul>
+    {% for lesson in course.lessons.all %}
+        <li><a href="{% url 'lms_core:lesson_detail' course.id lesson.id %}">{{ lesson.title }}</a></li>
+    {% empty %}
+        <li>No lessons yet.</li>
+    {% endfor %}
+</ul>
+
+<h2>Reviews</h2>
+<ul>
+    {% for review in course.reviews.all %}
+        <li><strong>{{ review.user.username }}</strong> ({{ review.rating }}/5): {{ review.comment }}</li>
+    {% empty %}
+        <li>No reviews yet.</li>
+    {% endfor %}
+</ul>

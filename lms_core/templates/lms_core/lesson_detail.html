@@ -1,0 +1,9 @@
+<h1>{{ lesson.title }}</h1>
+<p>{{ lesson.content }}</p>
+
+<a href="{% url 'lms_core:mark_lesson_complete' lesson.id %}">Mark as Complete</a>
+
+{% if lesson.quiz %}
+    <h2>Quiz</h2>
+    <a href="{% url 'lms_core:quiz_detail' lesson.quiz.id %}">Start Quiz: {{ lesson.quiz.title }}</a>
+{% endif %}
