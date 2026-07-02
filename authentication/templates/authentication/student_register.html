@@ -76,9 +76,6 @@
                 <p>
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
-                    {% if field.help_text %}
-                        <span class="helptext">{{ field.help_text|safe }}</span>
-                    {% endif %}
                     {% if field.errors %}
                         <span class="errorlist">{{ field.errors }}</span>
                     {% endif %}
