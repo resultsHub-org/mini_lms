@@ -19,7 +19,10 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from django.contrib.auth import views as auth_views
+
 urlpatterns = [
+    path('admin/logout/', auth_views.LogoutView.as_view(next_page='/')),
     path('admin/', admin.site.urls),
     path('auth/', include('authentication.urls')),
     path('courses/', include('lms_core.urls')), # lms_core is now under /courses/

@@ -126,6 +126,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Custom Login/Logout Settings
 LOGIN_URL = 'authentication:login_selection'
 LOGIN_REDIRECT_URL = '/courses/'
+LOGOUT_REDIRECT_URL = '/'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
