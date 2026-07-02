@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Login</title>
+    <title>Student Registration</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,7 +12,6 @@
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
-        /* Custom styling to inject into Django's default form formatting */
         form p {
             margin-bottom: 1.25rem;
             display: flex;
@@ -39,6 +38,18 @@
             border-color: #111827;
             box-shadow: 0 0 0 1px #111827;
         }
+        .helptext {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        .errorlist {
+            font-size: 0.75rem;
+            color: #ef4444;
+            margin-top: 0.25rem;
+            list-style-type: none;
+            padding-left: 0;
+        }
     </style>
 </head>
 <body class="bg-[#fafafa] min-h-screen flex items-center justify-center p-4 antialiased">
@@ -47,36 +58,43 @@
         
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-xl font-semibold text-gray-900 tracking-tight">Student Login</h1>
-            <p class="text-xs text-gray-500 mt-1">Enter your academic credentials to continue.</p>
+            <h1 class="text-xl font-semibold text-gray-900 tracking-tight">Create Student Account</h1>
+            <p class="text-xs text-gray-500 mt-1">Register to start enrolling and tracking your learning progress.</p>
         </div>
 
-        <!-- Error Handling -->
-        {% if form.errors %}
-            <div class="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2.5">
-                <svg class="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                </svg>
-                <p class="text-xs font-medium text-red-700 leading-normal">Your username and password didn't match. Please try again.</p>
-            </div>
-        {% endif %}
-
         <!-- Form -->
-        <form method="post" action="{% url 'authentication:student_login' %}" autocomplete="off">
+        <form method="post" action="{% url 'authentication:student_register' %}" autocomplete="off">
             {% csrf_token %}
             
-            {{ form.as_p }}
+            {% if form.non_field_errors %}
+                <div class="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg text-xs font-medium text-red-700">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <p>
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <span class="helptext">{{ field.help_text|safe }}</span>
+                    {% endif %}
+                    {% if field.errors %}
+                        <span class="errorlist">{{ field.errors }}</span>
+                    {% endif %}
+                </p>
+            {% endfor %}
 
             <button type="submit" class="w-full mt-2 bg-gray-900 hover:bg-black text-white text-sm font-medium py-2.5 px-4 rounded-lg cursor-pointer transition-colors duration-200 shadow-sm">
-                Sign In
+                Register Account
             </button>
         </form>
 
         <div class="mt-6 pt-6 border-t border-gray-100 text-center">
             <p class="text-xs text-gray-500">
-                New student? 
-                <a href="{% url 'authentication:student_register' %}" class="font-medium text-gray-900 hover:underline">
-                    Create Account
+                Already have an account? 
+                <a href="{% url 'authentication:student_login' %}" class="font-medium text-gray-900 hover:underline">
+                    Sign In
                 </a>
             </p>
         </div>

@@ -1,10 +1,85 @@
-<h1>Login Selection</h1>
-<p>Please choose how you would like to log in:</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Selection</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-[#fafafa] min-h-screen flex items-center justify-center p-4 antialiased">
 
-<a href="{% url 'authentication:student_login' %}">
-    <button>Login as Student</button>
-</a>
+    <div class="w-full max-w-[400px] bg-white border border-[#eaeaea] rounded-xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+        
+        <!-- Header -->
+        <div class="mb-8 text-center">
+            <h1 class="text-xl font-semibold text-gray-900 tracking-tight">Welcome</h1>
+            <p class="text-xs text-gray-500 mt-1">Please select your portal to continue.</p>
+        </div>
 
-<a href="{% url 'admin:index' %}">
-    <button>Login as Admin</button>
-</a>
+        <!-- Selection Buttons -->
+        <div class="space-y-3">
+            
+            <!-- Student Portal Option -->
+            <a href="{% url 'authentication:student_login' %}" class="group block w-full">
+                <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl transition-all duration-200 group-hover:border-gray-900 group-hover:shadow-[0_4px_12px_rgb(0,0,0,0.01)]">
+                    <div class="flex items-center gap-3.5">
+                        <div class="p-2 bg-gray-50 rounded-lg group-hover:bg-gray-900 group-hover:text-white transition-colors duration-200 text-gray-600">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a48.69 48.69 0 0 1 15.481 0m-15.481 0L12 3.306l8.952 3.422M8 15a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <span class="block text-sm font-medium text-gray-900">Student Portal</span>
+                            <span class="block text-[11px] text-gray-500 mt-0.5">Access your dashboard and courses</span>
+                        </div>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-900 group-hover:translate-x-0.5 transition-all duration-200" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                    </svg>
+                </div>
+            </a>
+
+            <!-- Admin Portal Option -->
+            <a href="{% url 'admin:index' %}" class="group block w-full">
+                <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl transition-all duration-200 group-hover:border-gray-900 group-hover:shadow-[0_4px_12px_rgb(0,0,0,0.01)]">
+                    <div class="flex items-center gap-3.5">
+                        <div class="p-2 bg-gray-50 rounded-lg group-hover:bg-gray-900 group-hover:text-white transition-colors duration-200 text-gray-600">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l.546.946a1.125 1.125 0 0 1-.26 1.398l-.965.743a1.052 1.052 0 0 0-.346.906c.007.075.011.15.011.226 0 .076-.004.15-.011.227a1.052 1.052 0 0 0 .346.906l.965.743a1.125 1.125 0 0 1 .26 1.398l-.546.947a1.125 1.125 0 0 1-1.37.491l-1.216-.456a1.051 1.051 0 0 0-1.075.124c-.073.044-.146.087-.22.128-.332.183-.582.495-.645.869l-.213 1.281c-.09.543-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.213-1.281a1.051 1.051 0 0 0-.646-.869c-.074-.041-.147-.084-.22-.129a1.051 1.051 0 0 0-1.075-.124l-1.216.456a1.125 1.125 0 0 1-1.37-.491l-.546-.947a1.125 1.125 0 0 1 .26-1.398l.965-.743c.298-.23.432-.617.346-.906A4.83 4.83 0 0 1 5.25 12c0-.076.004-.15.011-.226a1.052 1.052 0 0 0-.346-.906l-.965-.743a1.125 1.125 0 0 1-.26-1.398l.546-.947a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.218-.128.332-.183.582-.495.646-.869l.213-1.281Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <span class="block text-sm font-medium text-gray-900">Management</span>
+                            <span class="block text-[11px] text-gray-500 mt-0.5">Admin tools and site configuration</span>
+                        </div>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-900 group-hover:translate-x-0.5 transition-all duration-200" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                    </svg>
+                </div>
+            </a>
+
+        </div>
+
+        <div class="mt-6 pt-6 border-t border-gray-100 text-center">
+            <p class="text-xs text-gray-500">
+                New student? 
+                <a href="{% url 'authentication:student_register' %}" class="font-medium text-gray-900 hover:underline">
+                    Create a Student Account
+                </a>
+            </p>
+        </div>
+
+    </div>
+
+</body>
+</html>

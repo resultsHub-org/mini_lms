@@ -1,101 +1,197 @@
 from django.db import models
 from django.conf import settings
-from django.core.validators import MinValueValidator, MaxValueValidator
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        verbose_name_plural = "Categories"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
 
 class Course(models.Model):
+    LEVEL_CHOICES = [
+        ("Beginner", "Beginner"),
+        ("Intermediate", "Intermediate"),
+        ("Advanced", "Advanced"),
+    ]
+
+    instructor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="courses"
+    )
+
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="courses"
+    )
+
     title = models.CharField(max_length=200)
-    description = models.TextField(blank=True, null=True)
+    code = models.CharField(max_length=20, unique=True)
+    description = models.TextField(blank=True)
+
+    thumbnail = models.ImageField(
+        upload_to="course_thumbnails/",
+        blank=True,
+        null=True
+    )
+
+    duration = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Course duration in hours"
+    )
+
+    level = models.CharField(
+        max_length=20,
+        choices=LEVEL_CHOICES,
+        default="Beginner"
+    )
+
+    is_published = models.BooleanField(default=False)
+
     created_at = models.DateTimeField(auto_now_add=True)
-    
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["title"]
+
     def __str__(self):
         return self.title
+
 
 class Lesson(models.Model):
-    course = models.ForeignKey(Course, related_name='lessons', on_delete=models.CASCADE)
+    course = models.ForeignKey(
+        Course,
+        related_name="lessons",
+        on_delete=models.CASCADE
+    )
+
     title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
     content = models.TextField()
-    order = models.IntegerField(default=0)
-    
+
+    media = models.FileField(
+        upload_to="lesson_media/",
+        blank=True,
+        null=True
+    )
+
+    order = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="The order number of the lesson inside a course. Left blank, it auto-increments."
+    )
+
+    is_preview = models.BooleanField(
+        default=False,
+        help_text="Can students view this lesson before enrolling?"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     class Meta:
-        ordering = ['order']
+        ordering = ["order"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["course", "order"],
+                name="unique_lesson_order"
+            )
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.order is None:
+            max_order = Lesson.objects.filter(course=self.course).aggregate(models.Max('order'))['order__max']
+            self.order = (max_order or 0) + 1
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.title
+        return f"{self.course.title} - {self.title}"
+
 
 class Enrollment(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="enrollments"
+    )
+
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name="enrollments"
+    )
+
     enrolled_at = models.DateTimeField(auto_now_add=True)
-    
+
+    completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(blank=True, null=True)
+
     class Meta:
-        unique_together = ('user', 'course')
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "course"],
+                name="unique_enrollment"
+            )
+        ]
 
     def __str__(self):
-        return f'{self.user.username} enrolled in {self.course.title}'
+        return f"{self.user.username} enrolled in {self.course.title}"
+
 
 class Progress(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="progress"
+    )
+
+    lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.CASCADE,
+        related_name="progress"
+    )
+
     completed = models.BooleanField(default=False)
-    
+    completed_at = models.DateTimeField(blank=True, null=True)
+
     class Meta:
         verbose_name_plural = "Progress"
-        unique_together = ('user', 'lesson')
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "lesson"],
+                name="unique_progress"
+            )
+        ]
 
     def __str__(self):
-        return f'{self.user.username} - {self.lesson.title}: {"Completed" if self.completed else "In Progress"}'
+        status = "Completed" if self.completed else "In Progress"
+        return f"{self.user.username} - {self.lesson.title}: {status}"
 
-class Quiz(models.Model):
-    lesson = models.OneToOneField(Lesson, on_delete=models.CASCADE, related_name='quiz')
+
+class Announcement(models.Model):
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name="announcements"
+    )
+
     title = models.CharField(max_length=200)
+    message = models.TextField()
 
-    class Meta:
-        verbose_name_plural = "Quizzes"
-
-    def __str__(self):
-        return self.title
-
-class Question(models.Model):
-    quiz = models.ForeignKey(Quiz, related_name='questions', on_delete=models.CASCADE)
-    text = models.CharField(max_length=500)
-
-    def __str__(self):
-        return self.text
-
-class Answer(models.Model):
-    question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE)
-    text = models.CharField(max_length=200)
-    is_correct = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f'{"Correct" if self.is_correct else "Incorrect"}: {self.text}'
-
-class QuizAttempt(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    score = models.FloatField()
-    attempted_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f'{self.user.username} attempt on {self.quiz.title} with score {self.score}'
-
-class Review(models.Model):
-    course = models.ForeignKey(Course, related_name='reviews', on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
-    comment = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('course', 'user')
+        ordering = ["-created_at"]
 
     def __str__(self):
-        return f'Review for {self.course.title} by {self.user.username}'
-
-class Certificate(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    date_issued = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return f'Certificate for {self.user.username} in {self.course.title}'
+        return self.title

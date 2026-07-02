@@ -15,8 +15,4 @@ urlpatterns = [
     # Enrollment and Progress URLs
     path('course/<int:course_id>/enroll/', views.enroll_in_course, name='enroll_in_course'),
     path('lesson/<int:lesson_id>/complete/', views.mark_lesson_complete, name='mark_lesson_complete'),
-
-    # Quiz URLs
-    path('quiz/<int:quiz_id>/', views.quiz_detail, name='quiz_detail'),
-    path('quiz/<int:quiz_id>/submit/', views.submit_quiz, name='submit_quiz'),
 ]

@@ -119,6 +119,13 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Media files (Uploaded thumbnails and lesson media)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 # Custom Login/Logout Settings
 LOGIN_URL = 'authentication:login_selection'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/courses/'
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -1,22 +1,186 @@
-<h1>{{ course.title }}</h1>
-<p>{{ course.description }}</p>
+{% extends 'lms_core/base.html' %}
 
-<a href="{% url 'lms_core:enroll_in_course' course.id %}">Enroll Now</a>
+{% block title %}{{ course.title }} - EduPlatform{% endblock %}
 
-<h2>Lessons</h2>
-<ul>
-    {% for lesson in course.lessons.all %}
-        <li><a href="{% url 'lms_core:lesson_detail' course.id lesson.id %}">{{ lesson.title }}</a></li>
-    {% empty %}
-        <li>No lessons yet.</li>
-    {% endfor %}
-</ul>
+{% block content %}
+<div class="space-y-8 max-w-5xl mx-auto">
+    
+    <!-- Breadcrumbs / Back button -->
+    <div>
+        <a href="{% url 'lms_core:course_list' %}" class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+            </svg>
+            Back to Courses
+        </a>
+    </div>
 
-<h2>Reviews</h2>
-<ul>
-    {% for review in course.reviews.all %}
-        <li><strong>{{ review.user.username }}</strong> ({{ review.rating }}/5): {{ review.comment }}</li>
-    {% empty %}
-        <li>No reviews yet.</li>
-    {% endfor %}
-</ul>
+    <!-- Course Banner Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        
+        <!-- Main details -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="space-y-3">
+                <div class="flex flex-wrap items-center gap-2">
+                    {% if course.category %}
+                        <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider bg-gray-100 px-2.5 py-1 rounded">
+                            {{ course.category.name }}
+                        </span>
+                    {% endif %}
+                    <span class="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 bg-gray-900 text-white rounded">
+                        {{ course.level }}
+                    </span>
+                </div>
+                <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 leading-tight">
+                    {{ course.title }}
+                </h1>
+                <p class="text-xs text-gray-400">Course Code: <span class="font-mono bg-gray-100 px-1 py-0.5 rounded text-gray-700">{{ course.code }}</span> | Instructed by {{ course.instructor.username }}</p>
+            </div>
+
+            <!-- Image preview -->
+            <div class="aspect-video w-full rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
+                {% if course.thumbnail %}
+                    <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" class="object-cover w-full h-full">
+                {% else %}
+                    <div class="w-full h-full bg-gradient-to-tr from-gray-950 via-gray-900 to-gray-800 flex items-center justify-center p-12 text-left relative">
+                        <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                        <span class="text-4xl font-extrabold text-white/10 tracking-widest uppercase select-none">{{ course.code }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div class="space-y-3 bg-white border border-gray-200/60 p-6 rounded-xl">
+                <h3 class="text-sm font-semibold text-gray-900">About this course</h3>
+                <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{{ course.description }}</p>
+            </div>
+        </div>
+
+        <!-- Sidebar Actions & Progress Card -->
+        <div class="space-y-6">
+            <div class="bg-white border border-gray-200/80 rounded-xl p-6 shadow-xs space-y-6">
+                <div class="space-y-4">
+                    <h3 class="text-sm font-semibold text-gray-900">Course Overview</h3>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between text-xs py-2 border-b border-gray-50">
+                            <span class="text-gray-500">Duration</span>
+                            <span class="font-medium text-gray-900">{% if course.duration %}{{ course.duration }} hours{% else %}Self-paced{% endif %}</span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs py-2 border-b border-gray-50">
+                            <span class="text-gray-500">Lessons</span>
+                            <span class="font-medium text-gray-900">{{ total_lessons }} modules</span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs py-2 border-b border-gray-50">
+                            <span class="text-gray-500">Level</span>
+                            <span class="font-medium text-gray-900">{{ course.level }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {% if enrolled %}
+                    <!-- Progress Card -->
+                    <div class="bg-gray-50 border border-gray-100 rounded-lg p-4 space-y-3">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="font-medium text-gray-700">Your Progress</span>
+                            <span class="font-bold text-gray-900">{{ progress_percent }}%</span>
+                        </div>
+                        
+                        <!-- Progress bar -->
+                        <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-emerald-500 h-1.5 rounded-full transition-all duration-500" style="width: {{ progress_percent }}%"></div>
+                        </div>
+
+                        <p class="text-[11px] text-gray-500">{{ completed_count }} of {{ total_lessons }} lessons completed</p>
+                    </div>
+
+                    <!-- Continue/First Lesson -->
+                    {% if course.lessons.all %}
+                        <a href="{% url 'lms_core:lesson_detail' course.id course.lessons.all.0.id %}" class="block text-center w-full bg-gray-900 hover:bg-black text-white text-xs font-semibold py-3 px-4 rounded-lg transition-colors">
+                            Enter Lesson Viewer
+                        </a>
+                    {% else %}
+                        <button class="w-full bg-gray-200 text-gray-400 text-xs font-semibold py-3 px-4 rounded-lg cursor-not-allowed" disabled>
+                            No lessons added yet
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <!-- Enroll CTA Button -->
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'lms_core:enroll_in_course' course.id %}" class="block text-center w-full bg-gray-900 hover:bg-black text-white text-xs font-semibold py-3 px-4 rounded-lg transition-colors shadow-xs">
+                            Enroll in Course
+                        </a>
+                    {% else %}
+                        <a href="{% url 'authentication:login_selection' %}" class="block text-center w-full bg-gray-900 hover:bg-black text-white text-xs font-semibold py-3 px-4 rounded-lg transition-colors shadow-xs">
+                            Sign In to Enroll
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Structured Lessons Listing -->
+    <div class="bg-white border border-gray-200/80 rounded-xl p-6 max-w-3xl">
+        <h3 class="text-base font-bold text-gray-900 mb-6">Course Syllabus</h3>
+
+        <div class="space-y-3">
+            {% for lesson in course.lessons.all %}
+                <div class="flex items-center justify-between p-4 rounded-lg border {% if enrolled %}bg-white hover:border-gray-900 hover:bg-[#fafafa]{% else %}bg-gray-50/50{% endif %} border-gray-200 transition-all duration-200">
+                    <div class="flex items-center gap-3.5 min-w-0">
+                        <!-- Number index -->
+                        <div class="w-7 h-7 bg-gray-100 rounded-md flex items-center justify-center text-xs font-bold text-gray-500 shrink-0">
+                            {{ forloop.counter }}
+                        </div>
+                        <div class="min-w-0">
+                            {% if enrolled %}
+                                <a href="{% url 'lms_core:lesson_detail' course.id lesson.id %}" class="block text-xs font-semibold text-gray-900 hover:underline truncate">
+                                    {{ lesson.title }}
+                                </a>
+                            {% else %}
+                                {% if lesson.is_preview %}
+                                    <div class="flex items-center gap-2">
+                                        <a href="{% url 'lms_core:lesson_detail' course.id lesson.id %}" class="block text-xs font-semibold text-gray-900 hover:underline truncate">
+                                            {{ lesson.title }}
+                                        </a>
+                                        <span class="text-[9px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.2 rounded shrink-0">Preview</span>
+                                    </div>
+                                {% else %}
+                                    <span class="block text-xs font-medium text-gray-400 truncate">{{ lesson.title }}</span>
+                                {% endif %}
+                            {% endif %}
+                            <p class="text-[11px] text-gray-500 mt-0.5 truncate">{{ lesson.description }}</p>
+                        </div>
+                    </div>
+
+                    <div class="shrink-0 pl-4">
+                        {% if enrolled %}
+                            {% if lesson.id in completed_lessons_ids %}
+                                <span class="w-5 h-5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                    </svg>
+                                </span>
+                            {% else %}
+                                <a href="{% url 'lms_core:lesson_detail' course.id lesson.id %}" class="text-[11px] font-medium text-gray-500 hover:text-gray-900">Start</a>
+                            {% endif %}
+                        {% else %}
+                            {% if lesson.is_preview %}
+                                <a href="{% url 'lms_core:lesson_detail' course.id lesson.id %}" class="text-[11px] font-medium text-gray-900 hover:underline">Preview</a>
+                            {% else %}
+                                <svg class="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                                </svg>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-xs text-gray-500">No lessons listed for this course yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

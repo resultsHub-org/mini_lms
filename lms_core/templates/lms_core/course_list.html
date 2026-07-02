@@ -1,6 +1,101 @@
-<h1>Course List</h1>
-<ul>
-    {% for course in courses %}
-        <li><a href="{% url 'lms_core:course_detail' course.id %}">{{ course.title }}</a></li>
-    {% endfor %}
-</ul>
+{% extends 'lms_core/base.html' %}
+
+{% block title %}Explore Courses - EduPlatform{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Catalog Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 pb-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-gray-900">Explore Courses</h1>
+            <p class="text-xs text-gray-500 mt-1">Acquire and refine skills with our structured curriculum.</p>
+        </div>
+    </div>
+
+    <!-- Course Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for course in courses %}
+            <div class="group bg-white border border-gray-200/80 rounded-xl overflow-hidden hover:border-gray-900 hover:shadow-[0_8px_30px_rgb(0,0,0,0.02)] transition-all duration-300 flex flex-col justify-between">
+                
+                <!-- Card Header with image/thumbnail -->
+                <div>
+                    <div class="relative aspect-video w-full bg-gray-100 overflow-hidden">
+                        {% if course.thumbnail %}
+                            <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" class="object-cover w-full h-full group-hover:scale-102 transition-transform duration-500">
+                        {% else %}
+                            <!-- Premium minimalist fallback gradient -->
+                            <div class="w-full h-full bg-gradient-to-tr from-gray-950 via-gray-900 to-gray-800 flex items-center justify-center p-6 text-left relative">
+                                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                                <span class="text-2xl font-bold text-white/20 tracking-wider uppercase select-none">{{ course.code }}</span>
+                            </div>
+                        {% endif %}
+                        <!-- Level badge -->
+                        <span class="absolute top-3 left-3 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 bg-white/90 backdrop-blur-xs text-gray-900 rounded-md shadow-xs">
+                            {{ course.level }}
+                        </span>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="p-6 space-y-4">
+                        <div class="flex items-center justify-between gap-2">
+                            {% if course.category %}
+                                <span class="text-[10px] font-medium text-gray-500 uppercase tracking-wider bg-gray-50 px-2 py-0.5 rounded border border-gray-100">
+                                    {{ course.category.name }}
+                                </span>
+                            {% else %}
+                                <span class="text-[10px] font-medium text-gray-400">Uncategorized</span>
+                            {% endif %}
+                            
+                            {% if course.duration %}
+                                <span class="text-[11px] text-gray-500 flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                    {{ course.duration }} hrs
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="space-y-1">
+                            <h2 class="text-base font-semibold text-gray-900 leading-snug">
+                                <a href="{% url 'lms_core:course_detail' course.id %}" class="hover:underline">
+                                    {{ course.title }}
+                                </a>
+                            </h2>
+                            <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                                {{ course.description }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Footer / Actions -->
+                <div class="px-6 pb-6 pt-2 border-t border-gray-50 flex items-center justify-between gap-4 mt-auto">
+                    <span class="text-[11px] text-gray-400">By {{ course.instructor.username }}</span>
+                    
+                    {% if course.id in enrolled_courses %}
+                        <a href="{% url 'lms_core:course_detail' course.id %}" class="text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors">
+                            Enrolled
+                        </a>
+                    {% else %}
+                        <a href="{% url 'lms_core:course_detail' course.id %}" class="text-xs font-medium text-gray-700 bg-white border border-gray-200 hover:border-gray-900 px-3 py-1.5 rounded-lg transition-colors">
+                            Learn More
+                        </a>
+                    {% endif %}
+                </div>
+
+            </div>
+        {% empty %}
+            <div class="col-span-full py-16 text-center bg-white border border-gray-100 rounded-2xl flex flex-col items-center justify-center">
+                <div class="p-3 bg-gray-50 rounded-xl mb-4 text-gray-400">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                    </svg>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-900">No courses available</h3>
+                <p class="text-xs text-gray-500 mt-1">Check back later for newly published modules.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
